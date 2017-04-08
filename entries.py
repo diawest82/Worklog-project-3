@@ -4,14 +4,10 @@ import sys
 import csv
 
 
-class Entries():
+class Entries:
 
-    def __init(self,):
+    def __init(self):
         self.records = []
-        self.t_names = []
-        self.dates = []
-        self.t_time = []
-        self.notes = []
 
     # Prompt menu to add a new entry or lookup previous entries
     def prompt_menu(self):
@@ -58,24 +54,27 @@ class Entries():
         # notes
         self.clear_screen()
         print('Would you like to add additional notes? Y/N')
-        notes = input('> ')
         while True:
-            if notes.lower() == 'n':
-                notes = ''
-                break
-            if notes == 'y':
-                while True:
-                    self.clear_screen()
-                    print("Enter your notes.")
-                    notes = input('> ')
-                    if notes:
-                        break
-                    else:
-                        input("You must enter notes. Pres Enter")
-                        continue
-                break
+            notes = input('> ').lower()
+            if notes in 'yn':
+                if notes == 'n':
+                    notes = ''
+                    break
+                elif notes == 'y':
+                    while True:
+                        self.clear_screen()
+                        print("Enter your notes.")
+                        notes = input('> ')
+                        if notes:
+                            break
+                        else:
+                            input("You must enter notes. Pres Enter")
+                            continue
+                    break
             else:
-                input(" Please select 'Y' for yes and 'N' for no")
+                input(" Please select 'Y' for yes and 'N' for no. Press Enter ")
+                continue
+            
 
         self.add_entry_summary(task_name, time, notes, date)
 
@@ -96,7 +95,6 @@ class Entries():
                 continue
             else:
                 return date.strftime("%m/%d/%y")
-            break
 
     # function to add time
     def add_time(self):
@@ -126,7 +124,6 @@ class Entries():
                     time = round(((int(split_time[0]) * 60) + (
                         int(split_time[1]))) / 60, 2)
                     return time
-                    break
 
     # verifies entries before saving
     def add_entry_summary(self, task_name, time, notes, date):
@@ -303,7 +300,7 @@ class Entries():
         while True:
             if sel.lower() == 's':
                 self.clear_screen()
-                self.dates = self.show_list('d')
+                dates = self.show_list('d')
                 print("Enter a date by MM/DD/YY")
                 while True:
                     date = input(' ').strip()
@@ -339,11 +336,14 @@ class Entries():
                         input("Enter a valid date range")
                         continue
                     else:
-
-                        for dates_sorted in self.dates:
-                            if (dates_sorted >= date[0]) and (
-                                    dates_sorted <= date[-1]):
-                                dt_list.append(dates_sorted)
+                        dates = []
+                        for key in self.records:
+                            dates.append(key['Date'])
+                            dt = sorted(dates)
+                            for dates_sorted in dt:
+                                if (dates_sorted >= date[0]) and (
+                                        dates_sorted <= date[-1]):
+                                    dt_list.append(dates_sorted)
                         for entry in self.records:
                             if entry['Date'] in dt_list:
                                 reselect.append(entry)
@@ -411,7 +411,7 @@ class Entries():
                 input(' Nothing was entered.  Press Enter. \n')
                 continue
             else:
-                search_key = r''+note
+                search_key = r'' + note + '+'
                 for entry in self.records:
                     if (re.search(search_key, entry['Task name']) or
                             re.search(search_key, entry['Notes'])):
@@ -428,10 +428,6 @@ class Entries():
 
     # looks up list from saved csv file
     def show_list(self, a_list):
-        self.t_names = []
-        self.notes = []
-        self.dates = []
-        self.t_time = []
         while True:
             try:
                 with open('work_log.csv', 'r') as csvfile:
@@ -447,26 +443,13 @@ class Entries():
         for key in self.records:
             # dates sorted
             if a_list == 'd':
-                dts = []
-                dts.append(key['Date'])
-                self.dates = sorted(dts)
-                for dt in self.dates:
-                    print((' ' * 10) + dt)
-            # time filtere
+                print((' ' * 10) + key['Date'])
+            # time filter
             if a_list == 't':
-                self.t_time.append(key['Time(hours)'])
-                for tm in self.t_time:
-                    print((' ' * 10) + tm)
+                print((' ' * 10) + key['Time(hours)'])
             # task names and notes filtered
             if a_list == 'k':
-                self.notes.append(key['Notes'])
-                self.t_names.append(key['Task name'])
-                for tn in self.t_names:
-                    tn = tn
-                for nt in self.notes:
-                    print(tn + (' ' * 10) + nt)
-        return (self.t_names, self.notes, self.records,
-                self.dates, self.t_time)
+                print(key['Task name'] + (' ' * 10) + key['Notes'])
 
     # shows search results
     def display_results(self, entries):
